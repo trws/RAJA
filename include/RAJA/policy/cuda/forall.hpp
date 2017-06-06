@@ -201,7 +201,7 @@ RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE, Async>,
 {
   beforeCudaKernelLaunch();
 
-  auto body = loop_body;
+  typename std::remove_reference<LOOP_BODY>::type body = loop_body;
 
   auto first_begin = std::begin(iter);
   auto final_end = std::end(iter);

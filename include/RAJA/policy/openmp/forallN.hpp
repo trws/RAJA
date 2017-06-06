@@ -120,8 +120,6 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
     int end_i = iset_i.getEnd();
     int end_j = iset_j.getEnd();
 
-    ForallN_PeelOuter<NextExec, BODY> outer(next_exec, body);
-
 #if !defined(RAJA_COMPILER_MSVC)
 #pragma omp for nowait collapse(2)
 #else
@@ -129,7 +127,7 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
 #endif
     for (int i = begin_i; i < end_i; ++i) {
       for (int j = begin_j; j < end_j; ++j) {
-        outer(i, j);
+        next_exec(detail::bindhd(body, i, j));
       }
     }
   }
@@ -170,8 +168,6 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
     int end_j = iset_j.getEnd();
     int end_k = iset_k.getEnd();
 
-    ForallN_PeelOuter<NextExec, BODY> outer(next_exec, body);
-
 #if !defined(RAJA_COMPILER_MSVC)
 #pragma omp for nowait collapse(3)
 #else
@@ -180,7 +176,7 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
     for (int i = begin_i; i < end_i; ++i) {
       for (int j = begin_j; j < end_j; ++j) {
         for (int k = begin_k; k < end_k; ++k) {
-          outer(i, j, k);
+          next_exec(detail::bindhd(body, i, j, k));
         }
       }
     }
@@ -222,8 +218,6 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
     int stride_j = iset_j.getStride();
 
 
-    ForallN_PeelOuter<NextExec, BODY> outer(next_exec, body);
-
 #if !defined(RAJA_COMPILER_MSVC)
 #pragma omp for nowait collapse(2)
 #else
@@ -231,7 +225,7 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
 #endif
     for (int i = begin_i; i < end_i; i+=stride_i) {
       for (int j = begin_j; j < end_j; j+=stride_j) {
-        outer(i, j);
+        next_exec(detail::bindhd(body, i, j));
       }
     }
   }
@@ -275,8 +269,6 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
     int stride_j = iset_j.getStride();
     int stride_k = iset_k.getStride();
 
-    ForallN_PeelOuter<NextExec, BODY> outer(next_exec, body);
-
 #if !defined(RAJA_COMPILER_MSVC)
 #pragma omp for nowait collapse(3)
 #else
@@ -285,7 +277,7 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
     for (int i = begin_i; i < end_i; i+=stride_i) {
       for (int j = begin_j; j < end_j; j+=stride_j) {
         for (int k = begin_k; k < end_k; k+=stride_k) {
-          outer(i, j, k);
+          next_exec(detail::bindhd(body, i, j, k));
         }
       }
     }

@@ -120,12 +120,8 @@ RAJA_INLINE void forallN_apply_tile(tile_none,
 {
   // printf("TIDX=%d: policy=tile_none\n", (int)TIDX);
 
-  // Pass thru, so just bind the index set
-  typedef ForallN_BindFirstArg_Host<BODY, POLICY_INIT> BOUND;
-  BOUND new_body(body, pi);
-
   // Recurse to the next policy
-  forallN_peel_tile<BOUND, TIDX + 1>(TilePolicy{}, new_body, prest...);
+  forallN_peel_tile<TIDX + 1>(TilePolicy{}, detail::bindh(body, pi), prest...);
 }
 
 /*!
@@ -144,8 +140,6 @@ RAJA_INLINE void forallN_apply_tile(tile_fixed<TileSize>,
 {
   // printf("TIDX=%d: policy=tile_fixed<%d>\n", TIDX, TileSize);
 
-  typedef ForallN_BindFirstArg_Host<BODY, POLICY_INIT> BOUND;
-
   // tile loop
   Index_type i_begin = pi.getBegin();
   Index_type i_end = pi.getEnd();
@@ -154,11 +148,8 @@ RAJA_INLINE void forallN_apply_tile(tile_fixed<TileSize>,
     Index_type i1 = std::min(i0 + TileSize, i_end);
     POLICY_INIT pi_tile(RangeSegment(i0, i1));
 
-    // Pass thru, so just bind the index set
-    BOUND new_body(body, pi_tile);
-
     // Recurse to the next policy
-    forallN_peel_tile<BOUND, TIDX + 1>(TilePolicy{}, new_body, prest...);
+    forallN_peel_tile<TIDX + 1>(TilePolicy{}, detail::bindh(body, pi_tile), prest...);
   }
 }
 
@@ -187,7 +178,7 @@ struct ForallN_NextPolicyWrapper {
  * This just executes the built-up tiling function passed in by outer
  * forallN_peel_tile calls.
  */
-template <typename BODY, int TIDX, typename TilePolicy>
+template <int TIDX, typename BODY, typename TilePolicy>
 RAJA_INLINE void forallN_peel_tile(TilePolicy, BODY body)
 {
   // Termination case just calls the tiling function that was constructed
@@ -201,8 +192,8 @@ RAJA_INLINE void forallN_peel_tile(TilePolicy, BODY body)
  * This peels off the policy, and hands it off to the policy-overloaded
  * forallN_apply_tile function... which in turn recursively calls this function
  */
-template <typename BODY,
-          int TIDX,
+template <int TIDX,
+          typename BODY,
           typename POLICY_INIT,
           typename... POLICY_REST,
           typename... TilePolicies>
@@ -238,7 +229,7 @@ RAJA_INLINE void forallN_policy(ForallN_Tile_Tag, BODY body, PARGS... pargs)
   // Apply the tiling policies one-by-one with a peeling approach
   typedef ForallN_NextPolicyWrapper<NextPolicy, BODY, PARGS...> WRAPPER;
   WRAPPER wrapper(body);
-  forallN_peel_tile<WRAPPER, 0>(TilePolicy{}, wrapper, pargs...);
+  forallN_peel_tile<0>(TilePolicy{}, wrapper, pargs...);
 }
 
 }  // namespace RAJA

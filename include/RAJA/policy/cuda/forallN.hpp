@@ -351,7 +351,7 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
                         ForallN_PolicyPair<CudaPolicy<CuARGS>, ISETS>...> {
   ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0> iset0;
   ForallN_PolicyPair<CudaPolicy<CuARG1>, ISET1> iset1;
-  std::tuple<ForallN_PolicyPair<CudaPolicy<CuARGS>, ISETS>...> isets;
+  VarOps::tuple<ForallN_PolicyPair<CudaPolicy<CuARGS>, ISETS>...> isets;
 
   ForallN_Executor(
       ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0> const &iset0_,

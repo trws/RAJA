@@ -551,6 +551,7 @@ int getCudaSharedmemOffset(int id, dim3 reductionBlockDim, int size)
       // in a forall and have not yet gotten shared memory
 
       s_shared_memory_offsets[id] = s_shared_memory_amount_total;
+      std::cout << s_shared_memory_offsets[id] << std::endl;
 
       int num_threads = 
           reductionBlockDim.x * reductionBlockDim.y * reductionBlockDim.z;

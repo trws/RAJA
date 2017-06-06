@@ -4,6 +4,12 @@
 #include <stdlib.h>
 #include <stdexcept>
 
+#if __cplusplus > 201400L
+#define RAJA_CXX14_CONSTEXPR constexpr
+#else
+#define RAJA_CXX14_CONSTEXPR
+#endif
+
 //
 // Macros for decorating host/device functions for CUDA kernels.
 // We need a better solution than this as it is a pain to manage
