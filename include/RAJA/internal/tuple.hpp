@@ -43,6 +43,9 @@ struct get_type_at<0, first, rest...> {
   using type = first;
 };
 
+template <size_t index, typename... rest>
+using get_type_at_t = typename get_type_at<index, rest...>::type;
+
 template <size_t index, typename Type>
 struct tuple_storage {
   RAJA_HOST_DEVICE constexpr tuple_storage(Type val) : val{val} {}
@@ -66,7 +69,7 @@ struct tuple_helper<RAJA::util::index_sequence<Indices...>, Types...>
 
   using Self = tuple_helper<RAJA::util::index_sequence<Indices...>, Types...>;
   RAJA_HOST_DEVICE constexpr tuple_helper(Types... args)
-      : internal::tuple_storage<Indices, Types>(args)...
+      : internal::tuple_storage<Indices, Types>(std::forward<Types>(args))...
   {
   }
 
@@ -91,12 +94,20 @@ struct tuple
   using Base = internal::
       tuple_helper<RAJA::util::make_index_sequence<sizeof...(Elements)>,
                    Elements...>;
-  RAJA_HOST_DEVICE constexpr tuple(Elements... rest) : Base{rest...} {}
 
-  RAJA_HOST_DEVICE RAJA_CXX14_CONSTEXPR Self& operator=(const Self& rhs)
+  // Constructors
+  tuple() = default;
+  tuple(tuple const&) = default;
+  tuple(tuple&&) = default;
+  tuple& operator=(tuple const& rhs) = default;
+  tuple& operator=(tuple&& rhs) = default;
+
+  template<typename... OtherTypes>
+  RAJA_HOST_DEVICE constexpr explicit tuple(OtherTypes&&... rest)
+      : Base{std::forward<OtherTypes>(rest)...}
   {
-    Base::operator=(rhs);
   }
+
   template <typename... RTypes>
   RAJA_HOST_DEVICE RAJA_CXX14_CONSTEXPR Self& operator=(
       const tuple<RTypes...>& rhs)
@@ -106,20 +117,20 @@ struct tuple
   }
 
   template <size_t index>
-  RAJA_HOST_DEVICE auto get() noexcept ->
-      typename tuple_element<index, Self>::type
+  RAJA_HOST_DEVICE auto get() noexcept
+      -> internal::get_type_at_t<index, Elements..., void>
   {
     static_assert(sizeof...(Elements) > index, "index out of range");
-    using ret_type = typename tuple_element<index, Self>::type;
+    using ret_type = internal::get_type_at_t<index, Elements...>;
     using storage = internal::tuple_storage<index, ret_type>;
     return this->storage::get_inner();
   }
   template <size_t index>
-  RAJA_HOST_DEVICE auto get() const noexcept -> const
-      typename tuple_element<index, Self>::type
+  RAJA_HOST_DEVICE auto get() const noexcept
+      -> const internal::get_type_at_t<index, Elements..., void>
   {
     static_assert(sizeof...(Elements) > index, "index out of range");
-    using ret_type = typename tuple_element<index, Self>::type;
+    using ret_type = internal::get_type_at_t<index, Elements...>;
     using storage = internal::tuple_storage<index, ret_type>;
     return this->storage::get_inner();
   }
@@ -136,11 +147,11 @@ struct tuple_element<0, tuple<First, Rest...>> {
 };
 
 template <int index, typename... Args>
-RAJA_HOST_DEVICE constexpr auto get(const tuple<Args...>& t) noexcept ->
-    typename tuple_element<index, tuple<Args...>>::type
+RAJA_HOST_DEVICE constexpr auto get(const tuple<Args...>& t) noexcept
+    -> internal::get_type_at_t<index, Args...>
 {
   static_assert(sizeof...(Args) > index, "index out of range");
-  using ret_type = typename tuple_element<index, tuple<Args...>>::type;
+  using ret_type = internal::get_type_at_t<index, Args...>;
   using storage = internal::tuple_storage<index, ret_type>;
   return t.storage::get_inner();
 }
