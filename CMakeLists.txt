@@ -118,7 +118,7 @@ if(NOT DEFINED BLT_CXX_STD)
     set(BLT_CXX_STD c++14 CACHE STRING "Version of C++ standard")
     message("Using C++ standard: ${BLT_CXX_STD}")
   else() #cmake has no idea what to do, do it ourselves...
-    foreach(flag_var "c++17" "c++14" "c++11")
+    foreach(flag_var "c++20" "c++17" "c++14")
       CHECK_CXX_COMPILER_FLAG("-std=${flag_var}" COMPILER_SUPPORTS_${flag_var})
       if(COMPILER_SUPPORTS_${flag_var})
         set(BLT_CXX_STD ${flag_var} CACHE STRING "Version of C++ standard")
@@ -127,11 +127,11 @@ if(NOT DEFINED BLT_CXX_STD)
       endif()
     endforeach(flag_var)
   endif()
-else() #check BLT_CXX_STD is high enough by disallowing the only invalid option
-  if("${BLT_CXX_STD}" STREQUAL "c++98")
-    message(FATAL_ERROR "RAJA requires minimum C++ standard of c++11")
-  endif()
-endif(NOT DEFINED BLT_CXX_STD)
+endif() #check BLT_CXX_STD is high enough by disallowing the only invalid option
+
+if("${BLT_CXX_STD}" STREQUAL "c++98" OR "${BLT_CXX_STD}" STREQUAL "c++11")
+  message(FATAL_ERROR "RAJA requires minimum C++ standard of c++14")
+endif()
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
